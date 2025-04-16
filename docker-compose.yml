@@ -1,0 +1,31 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000" # Пренасочете порта на приложението
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_NAME=flatmoney
+      - JWT_SECRET=sadfassd-sadfasdfas-asdfascvhvbnghj-r5trcvxc-wefsdxxzcvzxc-sewerdfgsdfg
+    depends_on:
+      - database
+
+  database:
+    image: postgres:15
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: flatmoney
+    ports:
+      - "5432:5432" # Пренасочете порта на PostgreSQL
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
