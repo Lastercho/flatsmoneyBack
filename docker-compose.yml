@@ -1,5 +1,7 @@
 services:
   backend:
+    image: lastercho/flatmoneyback:latest
+    container_name: flatmoneyback
     build:
       context: .
       dockerfile: Dockerfile
@@ -17,7 +19,7 @@ services:
 
   database:
     image: postgres:15
-    container_name: postgres_container
+    container_name: flatmoneypostgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
