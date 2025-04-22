@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../database');
 const auth = require('../middleware/auth');
+const Apartment = require('../models/apartment.model'); // Import the Apartment model
 
 // Прилагаме auth middleware към всички routes
 router.use(auth);
@@ -60,5 +61,45 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Грешка при зареждане на детайлите за сградата' });
   }
 });
+router.post('/:buildingId/bulk-obligations', async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+    const { amount, due_date, description } = req.body;
 
-module.exports = router; 
+    // 1. Get all apartments in the building
+    const apartments = await getAllApartmentsInBuilding(buildingId);
+    console.log('Apartments:', apartments);
+
+    // 2. Create an obligation for each apartment
+    for (const apartment of apartments) {
+      await Apartment.addObligation(apartment.id, {
+        amount,
+        due_date,
+        description,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Добавени са задължения към ${apartments.length} апартамента`,
+    });
+  } catch (error) {
+    console.error('Error creating bulk obligations:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Възникна грешка при добавяне на задължения',
+    });
+  }
+});
+async function getAllApartmentsInBuilding(buildingId) {
+  const query = `
+    SELECT a.* 
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    WHERE f.building_id = $1
+  `;
+  const result = await pool.query(query, [buildingId]);
+  return result.rows;
+}
+
+module.exports = router;
