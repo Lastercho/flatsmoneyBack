@@ -279,6 +279,25 @@ app.put('/api/obligations/:id', auth, async (req, res) => { // Add auth middlewa
   }
 });
 
+// Изтриване на задължение
+app.delete('/api/apartments/:apartmentId/obligations/:id', auth, async (req, res) => { // Add auth middleware
+    try {
+        const result = await pool.query(
+            'UPDATE obligations SET is_deleted = TRUE WHERE id = $1 AND apartment_id = $2 RETURNING *',
+            [req.params.id, req.params.apartmentId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Задължението не е намерено' });
+        }
+
+        res.json({ message: 'Задължението е изтрито успешно' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Възникна грешка при изтриване на задължението' });
+    }
+});
+
 app.delete('/api/buildings/:id', auth, async (req, res) => { // Add auth middleware
   try {
     await pool.query('UPDATE buildings SET is_deleted = TRUE WHERE id = $1', [req.params.id]);
