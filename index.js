@@ -261,11 +261,11 @@ app.post('/api/apartments/:apartmentId/obligations', auth, async (req, res) => {
 
 // Маркиране на задължението като платено
 app.put('/api/obligations/:id', auth, async (req, res) => { // Add auth middleware
-  const { is_paid, payment_date } = req.body;
+  const { is_paid, is_paid_from_deposit, payment_date } = req.body;
   try {
     const result = await pool.query(
-      'UPDATE obligations SET is_paid = $1, payment_date = $2 WHERE id = $3 RETURNING *',
-      [is_paid, payment_date, req.params.id]
+      'UPDATE obligations SET is_paid = $1, is_paid_from_deposit = $2, payment_date = $3 WHERE id = $4 RETURNING *',
+      [is_paid, is_paid_from_deposit, payment_date, req.params.id]
     );
     
     if (result.rows.length === 0) {
