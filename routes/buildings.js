@@ -61,6 +61,7 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: 'Грешка при зареждане на детайлите за сградата' });
   }
 });
+
 router.post('/:buildingId/bulk-obligations', async (req, res) => {
   try {
     const { buildingId } = req.params;
@@ -91,6 +92,7 @@ router.post('/:buildingId/bulk-obligations', async (req, res) => {
     });
   }
 });
+
 async function getAllApartmentsInBuilding(buildingId) {
   const query = `
     SELECT a.* 
@@ -101,5 +103,37 @@ async function getAllApartmentsInBuilding(buildingId) {
   const result = await pool.query(query, [buildingId]);
   return result.rows;
 }
+
+// Изтриване на сграда
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Проверка дали потребителят има права за изтриване
+    const accessCheck = await pool.query(
+      `SELECT is_owner FROM building_access 
+       WHERE building_id = $1 AND user_id = $2`,
+      [id, userId]
+    );
+
+    if (accessCheck.rows.length === 0 || !accessCheck.rows[0].is_owner) {
+      return res.status(403).json({ message: 'Нямате права за изтриване на тази сграда' });
+    }
+
+    // Мякко изтриване на сградата
+    await pool.query(
+      `UPDATE buildings 
+       SET is_deleted = true 
+       WHERE id = $1`,
+      [id]
+    );
+
+    res.status(200).json({ message: 'Сградата беше успешно изтрита' });
+  } catch (error) {
+    console.error('Error deleting building:', error);
+    res.status(500).json({ message: 'Грешка при изтриване на сградата' });
+  }
+});
 
 module.exports = router;
