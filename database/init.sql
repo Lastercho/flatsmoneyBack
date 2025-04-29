@@ -136,6 +136,3 @@ ALTER TABLE floors ADD CONSTRAINT positive_total_apartments CHECK (total_apartme
 ALTER TABLE apartments ADD CONSTRAINT positive_area CHECK (area > 0);
 ALTER TABLE deposits ADD CONSTRAINT positive_amount CHECK (amount > 0);
 ALTER TABLE obligations ADD CONSTRAINT positive_amount CHECK (amount > 0);
-
--- Добавяне на поле за указване дали задължението е платено от депозит
-ALTER TABLE obligations ADD COLUMN is_paid_from_deposit BOOLEAN DEFAULT FALSE;
